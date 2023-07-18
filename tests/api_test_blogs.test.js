@@ -6,6 +6,7 @@ const helper = require('./test_helper_functions')
 // this sets the timeout for longer. Sometimes, test can fail due to timeout issues
 mongoose.set("bufferTimeoutMS", 30000)
 
+// superagent object has methods used to make HTTP reqs to server
 const api = supertest(app)
 
 // this initializes our test db everytime before this test is ran
@@ -33,7 +34,7 @@ beforeEach(async () => {
 
 })
 
-describe('When we call the test database through our backend api', () => {
+describe('When we call the test database through our backend api for our blogs', () => {
   describe('AND initial blogs are saved and all fetched via get request', () => {
     test('blogs are returned as json', async () => {
       await api
