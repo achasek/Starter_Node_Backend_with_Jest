@@ -9,12 +9,12 @@ mongoose.set("bufferTimeoutMS", 30000)
 
 const api = supertest(app)
 
-describe('When we call the test database through our backend api for our users', () => {
+describe('When we call the test database through our backend api for our users when there is 1 user', () => {
   beforeEach(async () => {
     await User.deleteMany({})
 
     const passwordHash = await bcrypt.hash('secret', 10)
-    const user = new User({ username: 'test user 1', name: 'test name 1', passwordHash })
+    const user = new User({ username: 'test user 1', passwordHash })
 
     await user.save()
   })
@@ -41,5 +41,31 @@ describe('When we call the test database through our backend api for our users',
       const usernames = usersAtEnd.map(user => user.username)
       expect(usernames).toContain(newUser.username)
     })
+
+    test('Creation fails with proper statuscode and message if username already taken', async () => {
+      const usersAtStart = await helper.usersInDb()
+
+      const newUser = {
+        username: 'test user 1',
+        name: 'Superuser',
+        password: 'salainen',
+      }
+
+      const result = await api
+        .post('/api/users')
+        .send(newUser)
+        .expect(400)
+        .expect('Content-Type', /application\/json/)
+
+      expect(result.body.error).toContain('expected `username` to be unique')
+
+      const usersAtEnd = await helper.usersInDb()
+      expect(usersAtEnd).toEqual(usersAtStart)
+    //   expect(usersAtEnd).toHaveLength(usersAtStart.length)
+    }, 100000)
   })
+})
+
+afterAll(async () => {
+  await mongoose.connection.close()
 })
