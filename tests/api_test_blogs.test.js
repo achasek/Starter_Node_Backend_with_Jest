@@ -67,7 +67,8 @@ describe('When we call the test database through our backend api for our blogs',
         title: 'test title 3',
         author: 'test author 3',
         url: 'test3.com',
-        likes: 15
+        likes: 15,
+        user: '64b9a778cf56247fe7790d03'
       }
 
       // this just checks the header type and status code returned
@@ -97,7 +98,11 @@ describe('When we call the test database through our backend api for our blogs',
         title: '',
         author: 'test author 3',
         url: '',
-        likes: 15
+        likes: 15,
+        // REMEMBER: for these tests that are configured to use the TEST DB
+        // and not the reg DB, to use an id of a user currently in the TEST DB and not the the reg DB
+        // if POST tests not working, go check DB and grab an id from test_users
+        user: '64b9a778cf56247fe7790d03'
       }
 
       // just checks for status code 400, does not check data
@@ -117,6 +122,7 @@ describe('When we call the test database through our backend api for our blogs',
         title: 'test title 3',
         author: 'test author 3',
         url: 'test3.com',
+        user: '64b9a778cf56247fe7790d03'
       }
 
       // just checks for status code 400, does not check data
