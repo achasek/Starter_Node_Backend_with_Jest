@@ -42,27 +42,27 @@ describe('When we call the test database through our backend api for our users w
       expect(usernames).toContain(newUser.username)
     })
 
-    // test('Creation fails with proper statuscode and message if username already taken', async () => {
-    //   const usersAtStart = await helper.usersInDb()
+    test('Creation fails with proper statuscode and message if username already taken', async () => {
+      const usersAtStart = await helper.usersInDb()
 
-    //   const newUser = {
-    //     username: 'testUser1',
-    //     name: 'Superuser',
-    //     password: 'salainen',
-    //   }
+      const newUser = {
+        username: 'testUser1',
+        name: 'Superuser',
+        password: 'salainen',
+      }
 
-    //   const result = await api
-    //     .post('/api/users')
-    //     .send(newUser)
-    //     .expect(400)
-    //     .expect('Content-Type', /application\/json/)
+      const result = await api
+        .post('/api/users')
+        .send(newUser)
+        .expect(400)
+        .expect('Content-Type', /application\/json/)
 
-    //   expect(result.body.error).toContain('expected `username` to be unique')
+      expect(result.body.error).toContain('expected `username` to be unique')
 
-    //   const usersAtEnd = await helper.usersInDb()
-    //   expect(usersAtEnd).toEqual(usersAtStart)
-    // //   expect(usersAtEnd).toHaveLength(usersAtStart.length)
-    // }, 10000)
+      const usersAtEnd = await helper.usersInDb()
+      expect(usersAtEnd).toEqual(usersAtStart)
+    //   expect(usersAtEnd).toHaveLength(usersAtStart.length)
+    }, 10000)
   })
 })
 
