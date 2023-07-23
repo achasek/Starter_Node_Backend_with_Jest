@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const supertest = require('supertest')
+const jwt = require('jsonwebtoken')
 const app = require('../app')
 const Blog = require('../models/blog')
 const helper = require('./test_helper_functions')
@@ -63,12 +64,20 @@ describe('When we call the test database through our backend api for our blogs',
 
   describe('AND we attempt to send a post request to our test db', () => {
     test('a valid blog can be added', async () => {
+      jest.mock('jsonwebtoken', () => ({
+        ...jest.requireActual('jsonwebtoken'), // import and retain the original functionalities
+        verify: jest.fn().mockReturnValue({ foo: 'bar' }), // overwrite verify
+      }));
+
+      const verify = jest.spyOn(jwt, 'verify');
+      verify.mockImplementation(() => () => ({ verified: 'true' }));
+
       const newBlog = {
         title: 'test title 3',
         author: 'test author 3',
         url: 'test3.com',
         likes: 15,
-        user: '64b9a778cf56247fe7790d03'
+        // user: '64b9a778cf56247fe7790d03'
       }
 
       // this just checks the header type and status code returned
@@ -102,6 +111,7 @@ describe('When we call the test database through our backend api for our blogs',
         // REMEMBER: for these tests that are configured to use the TEST DB
         // and not the reg DB, to use an id of a user currently in the TEST DB and not the the reg DB
         // if POST tests not working, go check DB and grab an id from test_users
+        // DO NOT CONFUSE TEST DB WITH PRODUCTION DB
         user: '64b9a778cf56247fe7790d03'
       }
 

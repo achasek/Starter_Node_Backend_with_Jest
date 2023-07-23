@@ -62,7 +62,7 @@ describe('When we call the test database through our backend api for our users w
       const usersAtEnd = await helper.usersInDb()
       expect(usersAtEnd).toEqual(usersAtStart)
     //   expect(usersAtEnd).toHaveLength(usersAtStart.length)
-    }, 10000)
+    })
   })
 })
 

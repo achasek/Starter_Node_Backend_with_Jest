@@ -1,6 +1,16 @@
 const blogsRouter = require('express').Router()
+const jwt = require('jsonwebtoken')
 const Blog = require('../models/blog')
 const User = require('../models/user')
+
+// will move this function to middleware and mount it in app.js after confirming that it works first
+const getTokenFrom = request => {
+  const authorization = request.get('authorization')
+  if (authorization && authorization.startsWith('Bearer ')) {
+    return authorization.replace('Bearer ', '')
+  }
+  return null
+}
 
 // .then version
 // blogsRouter.get('/', (request, response) => {
@@ -38,7 +48,15 @@ blogsRouter.get('/', async (request, response) => {
 blogsRouter.post('/', async (request, response, next) => {
   const body = request.body
 
-  const user = await User.findById(body.user)
+  // replace process.env with config.SECRET after initial tests
+  const decodedToken = jwt.verify(getTokenFrom(request), process.env.SECRET)
+  if (!decodedToken.id) {
+    return response.status(401).json({
+      error: 'token invalid'
+    })
+  }
+  console.log("DECODED TOKEN --->", decodedToken) // --------------------
+  const user = await User.findById(decodedToken.id)
 
   const blog = new Blog({
     title: body.title,
@@ -52,7 +70,7 @@ blogsRouter.post('/', async (request, response, next) => {
     const savedBlog = await blog.save()
     user.blogs = user.blogs.concat(savedBlog._id)
     await user.save()
-    console.log(user, 'user after post')
+    console.log( 'user after post --->', user)
     response.status(201).json(savedBlog)
   }
   catch(error) {

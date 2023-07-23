@@ -24,14 +24,33 @@ const errorHandler = (error, request, response, next) => {
     return response.status(400).send({ error: 'malformatted id' })
   } else if (error.name === 'ValidationError') {
     return response.status(400).json({ error: error.message })
+  // if token is invalid or missing
+  } else if (error.name ===  'JsonWebTokenError') {
+    return response.status(400).json({ error: error.message })
+  }
+  // if token is expired
+  else if (error.name === 'TokenExpiredError') {
+    return response.status(401).json({
+      error: 'token expired'
+    })
   }
 
   next(error)
+}
+
+// isolates the token from the authorization header
+const getTokenFrom = (request) => {
+  const authorization = request.get('authorization')
+  if (authorization && authorization.startsWith('Bearer ')) {
+    return authorization.replace('Bearer ', '')
+  }
+  return null
 }
 
 module.exports = {
   morgan,
   requestLogger,
   unknownEndpoint,
-  errorHandler
+  errorHandler,
+  getTokenFrom
 }

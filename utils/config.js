@@ -11,6 +11,8 @@ const MONGODB_URI = process.env.NODE_ENV === 'test'
   ? process.env.DB_TEST_URL
   : process.env.DB_URL
 
+// const MONGODB_URI = process.env.DB_TEST_URL
+
 module.exports = {
   DB_URL,
   DB_TEST_URL,

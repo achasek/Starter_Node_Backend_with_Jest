@@ -13,9 +13,11 @@ const middleware = require('./utils/middleware')
 // mongoose.set('strictQuery', false)
 // require('dotenv').config()
 
+// db variable added for clearer console.log is all
+const db = mongoose.connection;
 mongoose.connect(config.MONGODB_URI)
   .then(() => {
-    logger.info('connected to mongoDB')
+    logger.info(`Connected to MongoDB -- collection ${db.name} at ${db.host}:${db.port}`)
   })
   .catch((error) => {
     logger.error('connection to mongoDB failed', error.message)
