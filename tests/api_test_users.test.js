@@ -63,6 +63,48 @@ describe('When we call the test database through our backend api for our users w
       expect(usersAtEnd).toEqual(usersAtStart)
     //   expect(usersAtEnd).toHaveLength(usersAtStart.length)
     })
+
+    test('Creation fails with proper statuscode and message if password is not provided', async () => {
+      const usersAtStart = await helper.usersInDb()
+
+      const newUser = {
+        username: 'mluukkai',
+        name: 'Matti Luukkainen',
+        password: '',
+      }
+
+      const result = await api
+        .post('/api/users')
+        .send(newUser)
+        .expect(400)
+        .expect('Content-Type', /application\/json/)
+
+      expect(result.body.error).toContain('Must enter a valid password')
+
+      const usersAtEnd = await helper.usersInDb()
+      expect(usersAtEnd).toEqual(usersAtStart)
+    })
+
+    test('Creation fails with proper statuscode and message if password does not meet minimum length requirement', async () => {
+      const usersAtStart = await helper.usersInDb()
+
+      const newUser = {
+        username: 'mluukkai',
+        name: 'Matti Luukkainen',
+        password: '12',
+      }
+
+      const result = await api
+        .post('/api/users')
+        .send(newUser)
+        .expect(400)
+        .expect('Content-Type', /application\/json/)
+
+      expect(result.body.error).toContain('Password must be longer')
+
+      const usersAtEnd = await helper.usersInDb()
+      expect(usersAtEnd).toEqual(usersAtStart)
+    })
   })
 })
 
