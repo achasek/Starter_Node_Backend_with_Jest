@@ -2,15 +2,7 @@ const blogsRouter = require('express').Router()
 const jwt = require('jsonwebtoken')
 const Blog = require('../models/blog')
 const User = require('../models/user')
-
-// will move this function to middleware and mount it in app.js after confirming that it works first
-const getTokenFrom = request => {
-  const authorization = request.get('authorization')
-  if (authorization && authorization.startsWith('Bearer ')) {
-    return authorization.replace('Bearer ', '')
-  }
-  return null
-}
+const config = require('../utils/config')
 
 // .then version
 // blogsRouter.get('/', (request, response) => {
@@ -47,9 +39,10 @@ blogsRouter.get('/', async (request, response) => {
 // the id of the new blog created is saved in an array user.blogs
 blogsRouter.post('/', async (request, response, next) => {
   const body = request.body
+  // if middleware is working right, should log token WITHOUT Bearer in front
+  console.log(request.token, 'token in ctrl')
 
-  // replace process.env with config.SECRET after initial tests
-  const decodedToken = jwt.verify(getTokenFrom(request), process.env.SECRET)
+  const decodedToken = jwt.verify(request.token, config.SECRET)
   if (!decodedToken.id) {
     return response.status(401).json({
       error: 'token invalid'

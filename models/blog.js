@@ -6,6 +6,7 @@ const blogSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  // remove this as it has been replaced by the user key-value pair
   author: String,
   url: {
     type: String,

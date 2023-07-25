@@ -33,4 +33,19 @@ describe('When we call the test database through our backend api login route whe
 
     expect(response.body.token).toBeDefined()
   })
+
+  test('AND we attempt to login with invalid credentials, our backend responds with proper error code and does not grant a token', async () => {
+    const user = {
+      username: 'testUser1',
+      password: 'wrongPassword'
+    }
+
+    const response = await api
+      .post('/api/login')
+      .send(user)
+      .expect(401)
+      .expect('Content-Type', /application\/json/)
+
+    expect(response.body.token).toBeUndefined()
+  })
 })

@@ -29,9 +29,12 @@ app.use(middleware.requestLogger)
 
 app.use(middleware.morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
+
 app.get('/', (req, res) => {
   res.send({ success : 'server is live' })
 })
+
+app.use(middleware.getTokenFrom)
 
 app.use('/api/blogs', blogsRouter)
 app.use('/api/users', usersRouter)

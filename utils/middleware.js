@@ -9,10 +9,14 @@ const requestLogger = (request, response, next) => {
   logger.info('Method:', request.method)
   logger.info('Path:  ', request.path)
   logger.info('Body:  ', request.body)
+  if (request.headers.authorization) {
+    logger.info('Header:  ', request.headers.authorization)
+  }
   logger.info('---')
   next()
 }
 
+// this does not have the next parameter since being an endpoint would be the end of the middleware pipeline
 const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: 'unknown endpoint' })
 }
@@ -38,13 +42,16 @@ const errorHandler = (error, request, response, next) => {
   next(error)
 }
 
-// isolates the token from the authorization header
-const getTokenFrom = (request) => {
-  const authorization = request.get('authorization')
+// isolates the token from the authorization header and assigns that value to a custom key-value in the req object
+const getTokenFrom = (request, response, next) => {
+  let authorization = request.get('authorization')
+  console.log(authorization, 'before')
   if (authorization && authorization.startsWith('Bearer ')) {
-    return authorization.replace('Bearer ', '')
+    authorization = authorization.replace('Bearer ', '')
+    request.token = authorization
+    console.log(request.token, 'after')
   }
-  return null
+  next()
 }
 
 module.exports = {

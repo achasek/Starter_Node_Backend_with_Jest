@@ -63,14 +63,35 @@ describe('When we call the test database through our backend api for our blogs',
 
 
   describe('AND we attempt to send a post request to our test db', () => {
-    test('a valid blog can be added', async () => {
-      jest.mock('jsonwebtoken', () => ({
-        ...jest.requireActual('jsonwebtoken'), // import and retain the original functionalities
-        verify: jest.fn().mockReturnValue({ foo: 'bar' }), // overwrite verify
-      }));
+    beforeEach(async () => {
+      const user = {
+        username: 'testUser1',
+        password: 'secret'
+      }
 
-      const verify = jest.spyOn(jwt, 'verify');
-      verify.mockImplementation(() => () => ({ verified: 'true' }));
+      const request = await api
+        .post('/api/login')
+        .send(user)
+
+      const getTokenFrom = request => {
+        const authorization = request.get('authorization')
+        if (authorization && authorization.startsWith('Bearer ')) {
+          return authorization.replace('Bearer ', '')
+        }
+        return null
+      }
+
+      const decodedToken = jwt.verify(getTokenFrom(request), process.env.SECRET)
+    })
+
+    test('a valid blog can be added', async () => {
+      // jest.mock('jsonwebtoken', () => ({
+      //   ...jest.requireActual('jsonwebtoken'), // import and retain the original functionalities
+      //   verify: jest.fn().mockReturnValue({ foo: 'bar' }), // overwrite verify
+      // }));
+
+      // const verify = jest.spyOn(jwt, 'verify');
+      // verify.mockImplementation(() => () => ({ verified: 'true' }));
 
       const newBlog = {
         title: 'test title 3',
