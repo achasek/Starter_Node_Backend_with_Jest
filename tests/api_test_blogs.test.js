@@ -111,7 +111,7 @@ describe('When we call the test database through our backend api for our blogs',
       )
     })
 
-    test('blog without title or url is not allowed to be added', async () => {
+    test('a blog without title or url is not allowed to be added', async () => {
       const newBlog = {
         title: '',
         author: 'test author 3',
@@ -137,7 +137,7 @@ describe('When we call the test database through our backend api for our blogs',
       expect(blogsAfterPost).toHaveLength(helper.initialBlogs.length)
     })
 
-    test('blog without likes specifed during creation has default value of 0', async () => {
+    test('a blog without likes specifed during creation has default value of 0', async () => {
       const newBlog = {
         title: 'test title 3',
         author: 'test author 3',
@@ -158,6 +158,26 @@ describe('When we call the test database through our backend api for our blogs',
       expect(blogsAfterPost).toHaveLength(helper.initialBlogs.length + 1)
 
       expect(blogsAfterPost[2].likes).toEqual(0)
+    })
+    test('a blog with an invalid token is not added to the db and server responds with proper status code', async () => {
+      const newBlog = {
+        title: 'dummy blog',
+        author: 'dummy author',
+        url: 'dummy.com',
+      }
+
+      const dummyToken = ''
+
+      await api
+        .post('/api/blogs')
+        .set('Authorization', dummyToken)
+        .send(newBlog)
+        .expect(401)
+        .expect('Content-Type', /application\/json/)
+
+      const blogsAfterPost = await helper.blogsInDb()
+
+      expect(blogsAfterPost).toHaveLength(helper.initialBlogs.length)
     })
   })
 
@@ -222,9 +242,9 @@ describe('When we call the test database through our backend api for our blogs',
       const blogsBeforeGet = await helper.blogsInDb()
       const blogToDelete = blogsBeforeGet[0]
 
-
       await api
         .delete(`/api/blogs/${blogToDelete.id}`)
+        .set('Authorization', token)
         .expect(204)
       // delete has no data, so no content-type for this one
 
@@ -238,6 +258,25 @@ describe('When we call the test database through our backend api for our blogs',
 
       expect(titles).not.toContain(blogToDelete.title)
     })
+
+    // test('a blog cannot be successfully deleted without a valid token', async () => {
+    //   const blogsBeforeGet = await helper.blogsInDb()
+    //   const blogToDelete = blogsBeforeGet[0]
+
+    //   const dummyToken = ''
+
+    //   await api
+    //     .delete(`/api/blogs/${blogToDelete.id}`)
+    //     .set('Authorization', dummyToken)
+    //     .expect(401)
+    //   // delete has no data, so no content-type for this one
+
+    //   const blogsAfterPost = await helper.blogsInDb()
+
+    //   expect(blogsAfterPost).toHaveLength(
+    //     helper.initialBlogs.length
+    //   )
+    // })
   })
 
 

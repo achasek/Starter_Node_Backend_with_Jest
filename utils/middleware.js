@@ -33,9 +33,9 @@ const errorHandler = (error, request, response, next) => {
     return response.status(400).json({ error: error.message })
   }
   // if token is expired
-  else if (error.name === 'TokenExpiredError') {
+  else if (error.name === 'TokenExpiredError' || error.message.contains('expired')) {
     return response.status(401).json({
-      error: 'token expired'
+      error: 'token expired: please log in again'
     })
   }
 
@@ -51,6 +51,12 @@ const getTokenFrom = (request, response, next) => {
   }
   next()
 }
+
+// extracts user from HTTP req that requires a logged-in user to perform
+// const userExtractor = (request, response, next) => {
+//   const user = User.findById(request.body.)
+
+// }
 
 module.exports = {
   morgan,

@@ -40,36 +40,42 @@ blogsRouter.get('/', async (request, response) => {
 blogsRouter.post('/', async (request, response, next) => {
   const body = request.body
   // if middleware is working right, should log token WITHOUT Bearer in front
-  console.log(request.token, 'token in ctrl')
+  // console.log(request.token, 'token in ctrl')
   // this is only to make POST testing pass. I could not figure out how to set the request.token in testing to the auth header
   const token = request.token || request.headers.authorization
 
-  const decodedToken = jwt.verify(token, config.SECRET)
-  if (!decodedToken.id) {
+  if (!token) {
     return response.status(401).json({
-      error: 'token invalid'
+      error: 'token needed to post'
     })
-  }
-  console.log("DECODED TOKEN --->", decodedToken) // --------------------
-  const user = await User.findById(decodedToken.id)
+  } else {
+    const decodedToken = jwt.verify(token, config.SECRET)
+    if (!decodedToken.id) {
+      return response.status(401).json({
+        error: 'token invalid'
+      })
+    }
+    console.log("DECODED TOKEN --->", decodedToken) // --------------------
+    const user = await User.findById(decodedToken.id)
 
-  const blog = new Blog({
-    title: body.title,
-    author: body.author,
-    url: body.url,
-    likes: body.likes,
-    user: user.id
-  })
+    const blog = new Blog({
+      title: body.title,
+      author: body.author,
+      url: body.url,
+      likes: body.likes,
+      user: user.id
+    })
 
-  try {
-    const savedBlog = await blog.save()
-    user.blogs = user.blogs.concat(savedBlog._id)
-    await user.save()
-    console.log( 'user after post --->', user)
-    response.status(201).json(savedBlog)
-  }
-  catch(error) {
-    next(error)
+    try {
+      const savedBlog = await blog.save()
+      user.blogs = user.blogs.concat(savedBlog._id)
+      await user.save()
+      console.log( 'user after post --->', user)
+      response.status(201).json(savedBlog)
+    }
+    catch(error) {
+      next(error)
+    }
   }
 })
 
@@ -116,15 +122,44 @@ blogsRouter.get('/:id', async (request, response, next) => {
 
 // async await version
 blogsRouter.delete('/:id', async (request, response, next) => {
-  try {
-    // since no data is returned by a delete req, you do not need to assign the await keyword
-    // to a variable like in other async await functions
-    await Blog.findByIdAndRemove(request.params.id)
+  const token = request.token || request.headers.authorization
 
-    response.status(204).end()
-  }
-  catch(error) {
-    next(error)
+  if (!token) {
+    return response.status(401).json({
+      error: 'token needed to post'
+    })
+  } else {
+    const decodedToken = jwt.verify(token, config.SECRET)
+    if (!decodedToken.id) {
+      return response.status(401).json({
+        error: 'token invalid'
+      })
+    }
+
+    const user = await User.findById(decodedToken.id)
+
+    const blog = await Blog.findById(request.params.id)
+
+    if (!user || !blog) {
+      return response.status(401).json({
+        error: 'could not find blog or user with that id'
+      })
+    }
+    // remember blog.user is object; not string, because mongoose populate
+    if ( blog.user.toString() !== user.id ) {
+      return response.status(401).send({ error: 'invalid request: only creator of blog can delete' })
+    } else {
+      try {
+        // since no data is returned by a delete req, you do not need to assign the await keyword
+        // to a variable like in other async await functions
+        await Blog.findByIdAndRemove(request.params.id)
+
+        response.status(204).end()
+      }
+      catch(error) {
+        next(error)
+      }
+    }
   }
 })
 
