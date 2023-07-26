@@ -45,11 +45,9 @@ const errorHandler = (error, request, response, next) => {
 // isolates the token from the authorization header and assigns that value to a custom key-value in the req object
 const getTokenFrom = (request, response, next) => {
   let authorization = request.get('authorization')
-  console.log(authorization, 'before')
   if (authorization && authorization.startsWith('Bearer ')) {
     authorization = authorization.replace('Bearer ', '')
     request.token = authorization
-    console.log(request.token, 'after')
   }
   next()
 }
