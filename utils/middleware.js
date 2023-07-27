@@ -1,5 +1,8 @@
 const morgan = require('morgan')
 const logger = require('./logger')
+const config = require('./config')
+const jwt = require('jsonwebtoken')
+const User = require('../models/user')
 
 morgan.token('body', function getBody (req) {
   return JSON.stringify(req.body)
@@ -32,8 +35,8 @@ const errorHandler = (error, request, response, next) => {
   } else if (error.name ===  'JsonWebTokenError') {
     return response.status(400).json({ error: error.message })
   }
-  // if token is expired
-  else if (error.name === 'TokenExpiredError' || error.message.contains('expired')) {
+  // if token is expired || error.message.contains('expired')
+  else if (error.name === 'TokenExpiredError') {
     return response.status(401).json({
       error: 'token expired: please log in again'
     })
@@ -53,15 +56,39 @@ const getTokenFrom = (request, response, next) => {
 }
 
 // extracts user from HTTP req that requires a logged-in user to perform
-// const userExtractor = (request, response, next) => {
-//   const user = User.findById(request.body.)
+const getUserFrom = async (request, response, next) => {
+  // this is only to make POST testing pass. I could not figure out how to set the request.token in testing to the auth header
+  const token = request.token || request.headers.authorization
+  // if middleware is working right, should log token WITHOUT Bearer in front
+  // console.log('token in middleware',token)
 
-// }
+  if (!token) {
+    return response.status(401).json({
+      error: 'token not found'
+    })
+  } else {
+    const decodedToken = jwt.verify(token, config.SECRET)
+    console.log("DECODED TOKEN --->", decodedToken) // --------------------
+
+    if (!decodedToken.id) {
+      return response.status(401).json({
+        error: 'token invalid'
+      })
+    }
+
+    const user = await User.findById(decodedToken.id)
+
+    request.user = user
+  }
+
+  next()
+}
 
 module.exports = {
   morgan,
   requestLogger,
   unknownEndpoint,
   errorHandler,
-  getTokenFrom
+  getTokenFrom,
+  getUserFrom
 }

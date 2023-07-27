@@ -1,8 +1,6 @@
 const blogsRouter = require('express').Router()
-const jwt = require('jsonwebtoken')
 const Blog = require('../models/blog')
-const User = require('../models/user')
-const config = require('../utils/config')
+const middleware = require('../utils/middleware')
 
 // .then version
 // blogsRouter.get('/', (request, response) => {
@@ -37,46 +35,35 @@ blogsRouter.get('/', async (request, response) => {
 // async await version
 // the id of user who created the blog is saved in blog.user
 // the id of the new blog created is saved in an array user.blogs
-blogsRouter.post('/', async (request, response, next) => {
+blogsRouter.post('/', middleware.getUserFrom, async (request, response, next) => {
   const body = request.body
-  // if middleware is working right, should log token WITHOUT Bearer in front
-  // console.log(request.token, 'token in ctrl')
-  // this is only to make POST testing pass. I could not figure out how to set the request.token in testing to the auth header
-  const token = request.token || request.headers.authorization
 
-  if (!token) {
+  const user = request.user
+  if (!user) {
     return response.status(401).json({
-      error: 'token needed to post'
+      error: 'no user found to post this blog: blog needs user to post'
     })
-  } else {
-    const decodedToken = jwt.verify(token, config.SECRET)
-    if (!decodedToken.id) {
-      return response.status(401).json({
-        error: 'token invalid'
-      })
-    }
-    console.log("DECODED TOKEN --->", decodedToken) // --------------------
-    const user = await User.findById(decodedToken.id)
-
-    const blog = new Blog({
-      title: body.title,
-      author: body.author,
-      url: body.url,
-      likes: body.likes,
-      user: user.id
-    })
-
-    try {
-      const savedBlog = await blog.save()
-      user.blogs = user.blogs.concat(savedBlog._id)
-      await user.save()
-      console.log( 'user after post --->', user)
-      response.status(201).json(savedBlog)
-    }
-    catch(error) {
-      next(error)
-    }
   }
+
+  const blog = new Blog({
+    title: body.title,
+    author: body.author,
+    url: body.url,
+    likes: body.likes,
+    user: user.id
+  })
+
+  try {
+    const savedBlog = await blog.save()
+    user.blogs = user.blogs.concat(savedBlog._id)
+    await user.save()
+    console.log( 'user after post --->', user)
+    response.status(201).json(savedBlog)
+  }
+  catch(error) {
+    next(error)
+  }
+  // }
 })
 
 // .then version
@@ -121,46 +108,38 @@ blogsRouter.get('/:id', async (request, response, next) => {
 // })
 
 // async await version
-blogsRouter.delete('/:id', async (request, response, next) => {
-  const token = request.token || request.headers.authorization
+blogsRouter.delete('/:id', middleware.getUserFrom, async (request, response, next) => {
+  const user = request.user
 
-  if (!token) {
+  const blog = await Blog.findById(request.params.id)
+
+  if (!user || !blog) {
     return response.status(401).json({
-      error: 'token needed to post'
+      error: 'could not find blog or user with that id'
     })
+  }
+
+  if ( !blog.user ) {
+    return response.status(401).json({
+      error: 'could not delete: blog does not have an associated user'
+    })
+  }
+  // remember blog.user is object; not string, because mongoose populate
+  if ( blog.user.toString() !== user.id ) {
+    return response.status(401).send({ error: 'invalid request: only creator of blog can delete' })
   } else {
-    const decodedToken = jwt.verify(token, config.SECRET)
-    if (!decodedToken.id) {
-      return response.status(401).json({
-        error: 'token invalid'
-      })
+    try {
+      // since no data is returned by a delete req, you do not need to assign the await keyword
+      // to a variable like in other async await functions
+      await Blog.findByIdAndRemove(request.params.id)
+
+      response.status(204).end()
     }
-
-    const user = await User.findById(decodedToken.id)
-
-    const blog = await Blog.findById(request.params.id)
-
-    if (!user || !blog) {
-      return response.status(401).json({
-        error: 'could not find blog or user with that id'
-      })
-    }
-    // remember blog.user is object; not string, because mongoose populate
-    if ( blog.user.toString() !== user.id ) {
-      return response.status(401).send({ error: 'invalid request: only creator of blog can delete' })
-    } else {
-      try {
-        // since no data is returned by a delete req, you do not need to assign the await keyword
-        // to a variable like in other async await functions
-        await Blog.findByIdAndRemove(request.params.id)
-
-        response.status(204).end()
-      }
-      catch(error) {
-        next(error)
-      }
+    catch(error) {
+      next(error)
     }
   }
+  // }
 })
 
 blogsRouter.put('/:id', (request, response, next) => {
