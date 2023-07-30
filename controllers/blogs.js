@@ -59,11 +59,10 @@ blogsRouter.post('/', middleware.getUserFrom, async (request, response, next) =>
     await user.save()
     console.log( 'user after post --->', user)
     response.status(201).json(savedBlog)
-  }
-  catch(error) {
+  } catch(error) {
+    console.log('error in the POST ctrl', error.name)
     next(error)
   }
-  // }
 })
 
 // .then version
@@ -111,37 +110,38 @@ blogsRouter.get('/:id', async (request, response, next) => {
 blogsRouter.delete('/:id', middleware.getUserFrom, async (request, response, next) => {
   const user = request.user
 
-  const blog = await Blog.findById(request.params.id)
+  try {
+    const blog = await Blog.findById(request.params.id)
 
-  if (!user || !blog) {
-    return response.status(401).json({
-      error: 'could not find blog or user with that id'
-    })
-  }
+    if (!user || !blog) {
+      return response.status(401).json({
+        error: 'could not find blog or user with that id'
+      })
+    }
 
-  if ( !blog.user ) {
-    return response.status(401).json({
-      error: 'could not delete: blog does not have an associated user'
-    })
-  }
-  // remember blog.user is object; not string, because mongoose populate
-  if ( blog.user.toString() !== user.id ) {
-    return response.status(401).send({ error: 'invalid request: only creator of blog can delete' })
-  } else {
-    try {
+    if ( !blog.user ) {
+      return response.status(401).json({
+        error: 'could not delete: blog does not have an associated user'
+      })
+    }
+    // remember blog.user is object; not string, because mongoose populate
+    if ( blog.user.toString() !== user.id ) {
+      return response.status(401).send({ error: 'invalid request: only creator of blog can delete' })
+    } else {
       // since no data is returned by a delete req, you do not need to assign the await keyword
       // to a variable like in other async await functions
       await Blog.findByIdAndRemove(request.params.id)
 
       response.status(204).end()
     }
-    catch(error) {
-      next(error)
-    }
   }
-  // }
+  catch(error) {
+    next(error)
+  }
 })
 
+
+// update to async await
 blogsRouter.put('/:id', (request, response, next) => {
   const body = request.body
 

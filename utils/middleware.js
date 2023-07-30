@@ -36,7 +36,7 @@ const errorHandler = (error, request, response, next) => {
     return response.status(400).json({ error: error.message })
   }
   // if token is expired || error.message.contains('expired')
-  else if (error.name === 'TokenExpiredError') {
+  else if (error.name === 'TokenExpiredError' || error.message === 'jwt expired') {
     return response.status(401).json({
       error: 'token expired: please log in again'
     })
@@ -62,25 +62,28 @@ const getUserFrom = async (request, response, next) => {
   // if middleware is working right, should log token WITHOUT Bearer in front
   // console.log('token in middleware',token)
 
-  if (!token) {
-    return response.status(401).json({
-      error: 'token not found'
-    })
-  } else {
-    const decodedToken = jwt.verify(token, config.SECRET)
-    console.log("DECODED TOKEN --->", decodedToken) // --------------------
-
-    if (!decodedToken.id) {
+  try {
+    if (!token) {
       return response.status(401).json({
-        error: 'token invalid'
+        error: 'token not found'
       })
+    } else {
+      const decodedToken = jwt.verify(token, config.SECRET)
+      console.log("DECODED TOKEN --->", decodedToken) // --------------------
+
+      if (!decodedToken.id) {
+        return response.status(401).json({
+          error: 'token invalid'
+        })
+      }
+
+      const user = await User.findById(decodedToken.id)
+
+      request.user = user
     }
-
-    const user = await User.findById(decodedToken.id)
-
-    request.user = user
+  } catch(error) {
+    next(error)
   }
-
   next()
 }
 
