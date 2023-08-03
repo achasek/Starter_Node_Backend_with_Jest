@@ -4,13 +4,18 @@ const mongoose = require('mongoose')
 const blogSchema = new mongoose.Schema({
   title: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
   // remove this as it has been replaced by the user key-value pair
-  author: String,
+  author: {
+    type: String,
+    trim: true
+  },
   url: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
   likes: {
     type: Number,
