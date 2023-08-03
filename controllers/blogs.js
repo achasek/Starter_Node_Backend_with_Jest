@@ -177,25 +177,33 @@ blogsRouter.put('/:id', middleware.getUserFrom, async (request, response, next) 
     // used to make sure that cur user is same as creator of blog, given them authorization to update said blog
     const blogToUpdate = await Blog.findById(request.params.id)
 
-    if (!user || !blogToUpdate) {
-      return response.status(401).json({
-        error: 'could not find blog or user with that id'
-      })
-    }
-
-    if ( !blogToUpdate.user ) {
-      return response.status(401).json({
-        error: 'could not update: blog does not have an associated user'
-      })
-    }
-    // remember blog.user is object; not string, because mongoose populate
-    if ( blogToUpdate.user.toString() !== user.id ) {
-      return response.status(401).send({ error: 'invalid request: only creator of blog can update their own blog' })
-    } else {
-
+    // the only key-value that a non-creator of a blog can update is the likes || tried using lodash but didnt work here
+    if(blogToUpdate.title === blog.title && blogToUpdate.author === blog.author && blogToUpdate.url === blog.url && blogToUpdate.likes !== blog.likes) {
       const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, blog, { new: true })
 
       response.json(updatedBlog)
+    } else {
+
+      if (!user || !blogToUpdate) {
+        return response.status(401).json({
+          error: 'could not find blog or user with that id'
+        })
+      }
+
+      if ( !blogToUpdate.user ) {
+        return response.status(401).json({
+          error: 'could not update: blog does not have an associated user'
+        })
+      }
+      // remember blog.user is object; not string, because mongoose populate
+      if ( blogToUpdate.user.toString() !== user.id ) {
+        return response.status(401).send({ error: 'invalid request: only creator of blog can update their own blog' })
+      } else {
+
+        const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, blog, { new: true })
+
+        response.json(updatedBlog)
+      }
     }
   } catch(error) {
     next(error)
