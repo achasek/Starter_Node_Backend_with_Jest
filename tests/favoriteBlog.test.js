@@ -1,4 +1,4 @@
-const favoriteBlog = require('../utils/for_testing').favoriteBlog
+const favoriteBlog = require('../utils/for_testing').favoriteBlog;
 
 describe('blog with highest likes', () => {
   const listWithOneBlog = [
@@ -10,7 +10,7 @@ describe('blog with highest likes', () => {
       likes: 5,
       __v: 0
     }
-  ]
+  ];
 
   const blogs = [
     {
@@ -61,7 +61,7 @@ describe('blog with highest likes', () => {
       likes: 2,
       __v: 0
     }
-  ]
+  ];
 
   const blogWithHighestLikes = [
     {
@@ -72,20 +72,20 @@ describe('blog with highest likes', () => {
       likes: 12,
       __v: 0
     }
-  ]
+  ];
 
   test('when list is empty, returns string that says no likes on any blogs yet', () => {
-    const result = favoriteBlog([])
-    expect(result).toBe('No likes on any blogs yet')
-  })
+    const result = favoriteBlog([]);
+    expect(result).toBe('No likes on any blogs yet');
+  });
 
   test('when list has only one blog, blog with highest likes is that one', () => {
-    const result = favoriteBlog(listWithOneBlog)
-    expect(result).toEqual(listWithOneBlog)
-  })
+    const result = favoriteBlog(listWithOneBlog);
+    expect(result).toEqual(listWithOneBlog);
+  });
 
   test('when list has many blogs, equals the likes of blog with highest likes', () => {
-    const result = favoriteBlog(blogs)
-    expect(result).toEqual(blogWithHighestLikes)
-  })
-})
+    const result = favoriteBlog(blogs);
+    expect(result).toEqual(blogWithHighestLikes);
+  });
+});

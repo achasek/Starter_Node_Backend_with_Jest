@@ -1,4 +1,4 @@
-const totalLikes = require('../utils/for_testing').totalLikes
+const totalLikes = require('../utils/for_testing').totalLikes;
 
 describe('total likes', () => {
   const listWithOneBlog = [
@@ -10,7 +10,7 @@ describe('total likes', () => {
       likes: 5,
       __v: 0
     }
-  ]
+  ];
 
   const blogs = [
     {
@@ -61,15 +61,15 @@ describe('total likes', () => {
       likes: 2,
       __v: 0
     }
-  ]
+  ];
 
   test('when list has only one blog, equals the likes of that', () => {
-    const result = totalLikes(listWithOneBlog)
-    expect(result).toBe(5)
-  })
+    const result = totalLikes(listWithOneBlog);
+    expect(result).toBe(5);
+  });
 
   test('when list has many blogs, equals the total likes of all blogs', () => {
-    const result = totalLikes(blogs)
-    expect(result).toBe(36)
-  })
-})
+    const result = totalLikes(blogs);
+    expect(result).toBe(36);
+  });
+});

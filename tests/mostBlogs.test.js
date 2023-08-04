@@ -1,4 +1,4 @@
-const mostBlogs = require('../utils/for_testing').mostBlogs
+const mostBlogs = require('../utils/for_testing').mostBlogs;
 
 describe('blog with highest likes', () => {
   const blogs = [
@@ -56,7 +56,7 @@ describe('blog with highest likes', () => {
       blogs: 1,
       __v: 0
     }
-  ]
+  ];
 
   const authorWithHighestBlogs = [
     {
@@ -68,25 +68,25 @@ describe('blog with highest likes', () => {
       blogs: 14,
       __v: 0
     }
-  ]
+  ];
 
   const returnObj = {
     author: "Edsger W. Dijkstra",
     blogs: 14
-  }
+  };
 
   test('when list is empty, returns string that says no author has any blogs yet', () => {
-    const result = mostBlogs([])
-    expect(result).toBe('No author has any blogs yet')
-  })
+    const result = mostBlogs([]);
+    expect(result).toBe('No author has any blogs yet');
+  });
 
   test('when list has only one blog, returns obj only containing that author and blogs keys and values', () => {
-    const result = mostBlogs(authorWithHighestBlogs)
-    expect(result).toEqual(returnObj)
-  })
+    const result = mostBlogs(authorWithHighestBlogs);
+    expect(result).toEqual(returnObj);
+  });
 
   test('when list has many blogs, equals the likes of blog with highest likes', () => {
-    const result = mostBlogs(blogs)
-    expect(result).toEqual(returnObj)
-  })
-})
+    const result = mostBlogs(blogs);
+    expect(result).toEqual(returnObj);
+  });
+});

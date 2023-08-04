@@ -10,16 +10,16 @@ const getUpdatedKey = (oldData, newData) => {
   }
 
   return null;
-}
+};
 
 const removeKeys = (obj) => {
-  delete obj._id
-  delete obj.user
-  delete obj.__v
-  return obj
-}
+  delete obj._id;
+  delete obj.user;
+  delete obj.__v;
+  return obj;
+};
 
 module.exports = {
   getUpdatedKey,
   removeKeys
-}
+};

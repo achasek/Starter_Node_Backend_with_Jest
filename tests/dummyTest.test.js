@@ -1,10 +1,10 @@
-const dummyTester = require('../utils/for_testing').dummyTester
+const dummyTester = require('../utils/for_testing').dummyTester;
 
 describe('dummyTester returns', () => {
   test('one', () => {
-    const blogs = []
+    const blogs = [];
 
-    const result = dummyTester(blogs)
-    expect(result).toBe(1)
-  })
-})
+    const result = dummyTester(blogs);
+    expect(result).toBe(1);
+  });
+});

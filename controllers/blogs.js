@@ -1,6 +1,6 @@
-const blogsRouter = require('express').Router()
-const Blog = require('../models/blog')
-const middleware = require('../utils/middleware')
+const blogsRouter = require('express').Router();
+const Blog = require('../models/blog');
+const middleware = require('../utils/middleware');
 
 // .then version
 // blogsRouter.get('/', (request, response) => {
@@ -13,10 +13,10 @@ const middleware = require('../utils/middleware')
 
 // async await version
 blogsRouter.get('/', async (request, response) => {
-  const blogs = await Blog.find({}).populate('user', { username: 1, name: 1 })
+  const blogs = await Blog.find({}).populate('user', { username: 1, name: 1 });
 
-  response.json(blogs)
-})
+  response.json(blogs);
+});
 
 // .then version
 // blogsRouter.post('/', (request, response, next) => {
@@ -36,13 +36,13 @@ blogsRouter.get('/', async (request, response) => {
 // the id of user who created the blog is saved in blog.user
 // the id of the new blog created is saved in an array user.blogs
 blogsRouter.post('/', middleware.getUserFrom, async (request, response, next) => {
-  const body = request.body
+  const body = request.body;
 
-  const user = request.user
+  const user = request.user;
   if (!user) {
     return response.status(401).json({
       error: 'no user found to post this blog: blog needs user to post'
-    })
+    });
   }
 
   const blog = new Blog({
@@ -51,19 +51,19 @@ blogsRouter.post('/', middleware.getUserFrom, async (request, response, next) =>
     url: body.url,
     likes: body.likes,
     user: user.id
-  })
+  });
 
   try {
-    const savedBlog = await blog.save()
-    user.blogs = user.blogs.concat(savedBlog._id)
-    await user.save()
-    console.log( 'user after post --->', user)
-    response.status(201).json(savedBlog)
+    const savedBlog = await blog.save();
+    user.blogs = user.blogs.concat(savedBlog._id);
+    await user.save();
+    console.log( 'user after post --->', user);
+    response.status(201).json(savedBlog);
   } catch(error) {
-    console.log('error in the POST ctrl', error.name)
-    next(error)
+    console.log('error in the POST ctrl', error.name);
+    next(error);
   }
-})
+});
 
 // .then version
 // blogsRouter.get('/:id', (request, response, next) => {
@@ -80,18 +80,18 @@ blogsRouter.post('/', middleware.getUserFrom, async (request, response, next) =>
 // async await version
 blogsRouter.get('/:id', async (request, response, next) => {
   try {
-    const blog = await Blog.findById(request.params.id)
+    const blog = await Blog.findById(request.params.id);
     if(blog) {
-      response.json(blog)
+      response.json(blog);
     }
     else {
-      response.status(404).send({ error: `blog with id of ${request.params.id} could not be found` })
+      response.status(404).send({ error: `blog with id of ${request.params.id} could not be found` });
     }
   }
   catch(error) {
-    next(error)
+    next(error);
   }
-})
+});
 
 // .then version
 // blogsRouter.delete('/:id', (request, response, next) => {
@@ -108,37 +108,37 @@ blogsRouter.get('/:id', async (request, response, next) => {
 
 // async await version
 blogsRouter.delete('/:id', middleware.getUserFrom, async (request, response, next) => {
-  const user = request.user
+  const user = request.user;
 
   try {
-    const blog = await Blog.findById(request.params.id)
+    const blog = await Blog.findById(request.params.id);
 
     if (!user || !blog) {
       return response.status(401).json({
         error: 'could not find blog or user with that id'
-      })
+      });
     }
 
     if ( !blog.user ) {
       return response.status(401).json({
         error: 'could not delete: blog does not have an associated user'
-      })
+      });
     }
     // remember blog.user is object; not string, because mongoose populate
     if ( blog.user.toString() !== user.id ) {
-      return response.status(401).send({ error: 'invalid request: only creator of blog can delete' })
+      return response.status(401).send({ error: 'invalid request: only creator of blog can delete' });
     } else {
       // since no data is returned by a delete req, you do not need to assign the await keyword
       // to a variable like in other async await functions
-      await Blog.findByIdAndRemove(request.params.id)
+      await Blog.findByIdAndRemove(request.params.id);
 
-      response.status(204).end()
+      response.status(204).end();
     }
   }
   catch(error) {
-    next(error)
+    next(error);
   }
-})
+});
 
 
 // .then version
@@ -163,51 +163,51 @@ blogsRouter.delete('/:id', middleware.getUserFrom, async (request, response, nex
 
 // async await version
 blogsRouter.put('/:id', middleware.getUserFrom, async (request, response, next) => {
-  const body = request.body
-  const user = request.user
+  const body = request.body;
+  const user = request.user;
 
   const blog = {
     title: body.title,
     author: body.author,
     url: body.url,
     likes: body.likes
-  }
+  };
 
   try {
     // used to make sure that cur user is same as creator of blog, given them authorization to update said blog
-    const blogToUpdate = await Blog.findById(request.params.id)
+    const blogToUpdate = await Blog.findById(request.params.id);
 
     // the only key-value that a non-creator of a blog can update is the likes || tried using lodash but didnt work here
     if(blogToUpdate.title === blog.title && blogToUpdate.author === blog.author && blogToUpdate.url === blog.url && blogToUpdate.likes !== blog.likes) {
-      const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, blog, { new: true })
+      const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, blog, { new: true });
 
-      response.json(updatedBlog)
+      response.json(updatedBlog);
     } else {
 
       if (!user || !blogToUpdate) {
         return response.status(401).json({
           error: 'could not find blog or user with that id'
-        })
+        });
       }
 
       if ( !blogToUpdate.user ) {
         return response.status(401).json({
           error: 'could not update: blog does not have an associated user'
-        })
+        });
       }
       // remember blog.user is object; not string, because mongoose populate
       if ( blogToUpdate.user.toString() !== user.id ) {
-        return response.status(401).send({ error: 'invalid request: only creator of blog can update their own blog' })
+        return response.status(401).send({ error: 'invalid request: only creator of blog can update their own blog' });
       } else {
 
-        const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, blog, { new: true })
+        const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, blog, { new: true });
 
-        response.json(updatedBlog)
+        response.json(updatedBlog);
       }
     }
   } catch(error) {
-    next(error)
+    next(error);
   }
-})
+});
 
-module.exports = blogsRouter
+module.exports = blogsRouter;
