@@ -18,6 +18,7 @@ const db = mongoose.connection;
 mongoose.connect(config.MONGODB_URI)
   .then(() => {
     logger.info(`Connected to MongoDB -- collection ${db.name} at ${db.host}:${db.port}`);
+    logger.info(`Running in ${config.ENV}`);
   })
   .catch((error) => {
     logger.error('connection to mongoDB failed', error.message);
@@ -39,6 +40,12 @@ app.use(middleware.getTokenFrom);
 app.use('/api/blogs', blogsRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/login', loginRouter);
+
+// this conditional mounts this test router only if app is in test mode
+if (config.ENV === 'test') {
+  const testingRouter = require('./controllers/testing');
+  app.use('/api/testing', testingRouter);
+}
 
 app.use(middleware.unknownEndpoint);
 app.use(middleware.errorHandler);
