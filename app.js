@@ -43,6 +43,7 @@ app.use('/api/login', loginRouter);
 
 // this conditional mounts this test router only if app is in test mode
 if (config.ENV === 'test') {
+  console.log('app running in test mode');
   const testingRouter = require('./controllers/testing');
   app.use('/api/testing', testingRouter);
 }
